@@ -1,58 +1,15 @@
-<!-- code2: static/index.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Two Dots Clone</title>
-    <style>
-        body { font-family: sans-serif; }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(6, 40px);
-            grid-gap: 5px;
-            margin-top: 20px;
-        }
-        .dot {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: gray;
-        }
-    </style>
-    <style>
-        .selected {
-          outline: 3px solid white;
-          box-shadow: 0 0 5px black;
-        }
-      </style>
+  <meta charset="UTF-8" />
+  <title>Two Dots風ゲーム</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>Two Dots (6x6)</h1>
-    <div class="grid" id="grid"></div>
-
-    <script>
-    fetch('/api/board')
-        .then(res => res.json())
-        .then(board => {
-            const grid = document.getElementById('grid');
-            board.forEach((row, y) => {
-                row.forEach((cell, x) => {
-                    const dot = document.createElement('div');
-                    dot.className = 'dot';
-                    dot.style.backgroundColor = cell;
-
-                    // 座標情報をカスタム属性に保持
-                    dot.dataset.x = x;
-                    dot.dataset.y = y;
-
-                    // クリックで選択状態の切り替え
-                    dot.addEventListener('click', () => {
-                        dot.classList.toggle('selected');
-                    });
-                    grid.appendChild(dot);
-                });
-            });
-        });
-    </script>
+  <div id="grid-wrapper">
+    <svg id="lines"></svg>
+    <div id="grid"></div>
+  </div>
+  <script src="main.js"></script>
 </body>
 </html>
