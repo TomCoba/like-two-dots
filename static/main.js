@@ -1,5 +1,12 @@
-const selectedDots = [];
+let selectedDots = [];
+let selectedColor = null;
 
+// ドットの data-color 属性から色を取得
+function getDotColor(dot) {
+  return dot.dataset.color;
+}
+
+// ドットの中心座標を取得
 function getDotCenter(dot) {
   const rect = dot.getBoundingClientRect();
   const parentRect = dot.parentElement.getBoundingClientRect();
@@ -8,13 +15,34 @@ function getDotCenter(dot) {
   return [x, y];
 }
 
+// 選択可能かどうか判定（色が同じか）
+function canSelectDot(dot) {
+  const color = getDotColor(dot);
+  return selectedDots.length === 0 || color === selectedColor;
+}
+
+// ドットを選択状態にする（色チェックあり）
+function selectDot(dot) {
+  const color = getDotColor(dot);
+  if (selectedDots.includes(dot)) return;
+
+  if (selectedDots.length === 0) {
+    selectedColor = color;
+  }
+
+  selectedDots.push(dot);
+  dot.classList.add("selected");
+  drawLines();
+}
+
+// 線を描画
 function drawLines() {
-  const svg = document.getElementById('lines');
-  svg.innerHTML = '';
+  const svg = document.getElementById("lines");
+  svg.innerHTML = "";
 
   for (let i = 0; i < selectedDots.length - 1; i++) {
-    const [x1, y1] = selectedDots[i];
-    const [x2, y2] = selectedDots[i + 1];
+    const [x1, y1] = getDotCenter(selectedDots[i]);
+    const [x2, y2] = getDotCenter(selectedDots[i + 1]);
 
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("x1", x1);
@@ -28,29 +56,32 @@ function drawLines() {
   }
 }
 
-fetch('/api/board')
-  .then(res => res.json())
-  .then(board => {
-    const grid = document.getElementById('grid');
+// 選択状態をリセット
+function clearSelection() {
+  selectedDots.forEach((dot) => dot.classList.remove("selected"));
+  selectedDots = [];
+  selectedColor = null;
+}
 
-    board.forEach((row, y) => {
-      row.forEach((cell, x) => {
-        const dot = document.createElement('div');
-        dot.className = 'dot';
+// 初期化処理: ボード描画とイベント登録
+fetch("/api/board")
+  .then((res) => res.json())
+  .then((board) => {
+    const grid = document.getElementById("grid");
+
+    board.forEach((row) => {
+      row.forEach((cell) => {
+        const dot = document.createElement("div");
+        dot.className = "dot";
         dot.style.backgroundColor = cell;
+        dot.dataset.color = cell;
 
-        dot.addEventListener('click', () => {
-          const coord = getDotCenter(dot);
-
-          if (dot.classList.contains('selected')) {
-            dot.classList.remove('selected');
-            selectedDots.splice(selectedDots.findIndex(c => c[0] === coord[0] && c[1] === coord[1]), 1);
+        dot.addEventListener("click", () => {
+          if (canSelectDot(dot)) {
+            selectDot(dot);
           } else {
-            dot.classList.add('selected');
-            selectedDots.push(coord);
+            console.log("Cannot select: different color");
           }
-
-          drawLines();
         });
 
         grid.appendChild(dot);
